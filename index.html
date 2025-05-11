@@ -1,12 +1,220 @@
-- 👋 Hi, I’m @ZevarCollection
-- 👀 I’m interested in ...
-- 🌱 I’m currently learning ...
-- 💞️ I’m looking to collaborate on ...
-- 📫 How to reach me ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ZEVAR COLLECTION - Jewellery Price Calculator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #fff8e1, #fffde7);
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
 
-<!---
-ZevarCollection/ZevarCollection is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
-You can click the Preview link to take a look at your changes.
---->
+    .calculator {
+      max-width: 400px;
+      margin: auto;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      padding: 25px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #d4af37;
+    }
+
+    .tabs {
+      display: flex;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      background: #eee;
+      font-weight: bold;
+    }
+
+    .tab.active.gold {
+      background: linear-gradient(to right, #d4af37, #f5e960);
+      color: #000;
+    }
+
+    .tab.active.silver {
+      background: linear-gradient(to right, #dcdcdc, #f0f0f0);
+      color: #000;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+
+    .button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      background: linear-gradient(to right, #ffc107, #ffeb3b);
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    .price-breakdown {
+      margin-top: 25px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 12px;
+    }
+
+    .price-breakdown h3 {
+      margin-bottom: 15px;
+    }
+
+    .price-line {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .discount {
+      color: red;
+      font-weight: bold;
+    }
+
+    .final-price {
+      font-size: 20px;
+      font-weight: bold;
+      text-align: right;
+      color: #2e7d32;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <h1>ZEVAR COLLECTION</h1>
+    <div class="tabs">
+      <div class="tab active gold" onclick="switchTab('gold')">Gold</div>
+      <div class="tab silver" onclick="switchTab('silver')">Silver</div>
+    </div>
+
+    <div id="form">
+      <div class="form-group">
+        <label>Live Rate (per 10g)</label>
+        <input type="number" id="rate" placeholder="Enter rate per 10 grams" />
+      </div>
+      <div class="form-group">
+        <label>Net Weight (g)</label>
+        <input type="number" id="weight" placeholder="Enter weight in grams" />
+      </div>
+      <div class="form-group">
+        <label>Making Charges</label>
+        <select id="goldMaking" style="display: block;">
+          <option value="799">₹799 per gram</option>
+          <option value="999">₹999 per gram</option>
+          <option value="1199">₹1199 per gram</option>
+        </select>
+        <select id="silverMaking" style="display: none;">
+          <option value="25">₹25 per gram</option>
+          <option value="35">₹35 per gram</option>
+          <option value="45">₹45 per gram</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Discount on Making Charges (%)</label>
+        <input type="number" id="discount" value="0" />
+      </div>
+      <button class="button" onclick="calculate()">Calculate Price</button>
+    </div>
+
+    <div id="result" class="price-breakdown" style="display:none;">
+      <h3>Price Breakdown</h3>
+      <div class="price-line"><span>Rate per gram:</span><span id="perGramRate"></span></div>
+      <div class="price-line"><span>Metal Rate (adjusted):</span><span id="metalRate"></span></div>
+      <div class="price-line"><span>Metal Value:</span><span id="metalValue"></span></div>
+      <div class="price-line"><span>Making Charges:</span><span id="makingCharges"></span></div>
+      <div class="price-line"><span>Discount on Making:</span><span class="discount" id="discountValue"></span></div>
+      <div class="price-line"><span>Subtotal:</span><span id="subtotal"></span></div>
+      <div class="price-line"><span>GST (3%):</span><span id="gst"></span></div>
+      <div class="final-price">Final Price: <span id="finalPrice"></span></div>
+    </div>
+  </div>
+
+  <script>
+    let metalType = 'gold';
+
+    function switchTab(type) {
+      metalType = type;
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelector(`.tab.${type}`).classList.add('active');
+
+      // Toggle background
+      document.body.style.background = type === 'gold'
+        ? 'linear-gradient(to right, #fff8e1, #fffde7)'
+        : 'linear-gradient(to right, #e0e0e0, #f5f5f5)';
+
+      // Toggle making charge dropdowns
+      document.getElementById("goldMaking").style.display = type === 'gold' ? 'block' : 'none';
+      document.getElementById("silverMaking").style.display = type === 'silver' ? 'block' : 'none';
+    }
+
+    function calculate() {
+      const rate10g = parseFloat(document.getElementById("rate").value);
+      const weight = parseFloat(document.getElementById("weight").value);
+      const makingChargePerGram = metalType === 'gold'
+        ? parseFloat(document.getElementById("goldMaking").value)
+        : parseFloat(document.getElementById("silverMaking").value);
+      const discountPercent = parseFloat(document.getElementById("discount").value);
+
+      if (!rate10g || !weight) {
+        alert("Please fill all fields.");
+        return;
+      }
+
+      const ratePerGram = rate10g / 10;
+      const purity = metalType === 'gold' ? 0.75 : 0.65;
+      const adjustedRate = ratePerGram * purity;
+      const metalValue = adjustedRate * weight;
+      const makingCharges = makingChargePerGram * weight;
+      const discountValue = (discountPercent / 100) * makingCharges;
+      const netMakingCharges = makingCharges - discountValue;
+      const subtotal = metalValue + netMakingCharges;
+      const gst = subtotal * 0.03;
+      const finalPrice = subtotal + gst;
+
+      document.getElementById("perGramRate").textContent = `₹${ratePerGram.toFixed(2)}`;
+      document.getElementById("metalRate").textContent = `₹${adjustedRate.toFixed(2)} per gram (${metalType === 'gold' ? '18K' : '15.6K'})`;
+      document.getElementById("metalValue").textContent = `₹${metalValue.toFixed(2)}`;
+      document.getElementById("makingCharges").textContent = `₹${makingCharges.toFixed(2)}`;
+      document.getElementById("discountValue").textContent = `-₹${discountValue.toFixed(2)}`;
+      document.getElementById("subtotal").textContent = `₹${subtotal.toFixed(2)}`;
+      document.getElementById("gst").textContent = `₹${gst.toFixed(2)}`;
+      document.getElementById("finalPrice").textContent = `₹${finalPrice.toFixed(2)}`;
+      document.getElementById("result").style.display = "block";
+    }
+  </script>
+</body>
+</html>
