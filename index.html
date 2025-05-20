@@ -130,9 +130,16 @@
         <label>Net Weight (g)</label>
         <input type="number" id="weight" placeholder="Enter weight in grams" />
       </div>
+      <div class="form-group" id="purityGroup">
+        <label>Select Gold Purity</label>
+        <select id="purity">
+          <option value="0.75">18K (750)</option>
+          <option value="0.916">22K (916)</option>
+        </select>
+      </div>
       <div class="form-group">
         <label>Making Charges</label>
-        <select id="goldMaking" style="display: block;">
+        <select id="goldMaking">
           <option value="799">₹799 per gram</option>
           <option value="999">₹999 per gram</option>
           <option value="1199">₹1199 per gram</option>
@@ -171,14 +178,13 @@
       document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
       document.querySelector(`.tab.${type}`).classList.add('active');
 
-      // Toggle background
       document.body.style.background = type === 'gold'
         ? 'linear-gradient(to right, #fff8e1, #fffde7)'
         : 'linear-gradient(to right, #e0e0e0, #f5f5f5)';
 
-      // Toggle making charge dropdowns
       document.getElementById("goldMaking").style.display = type === 'gold' ? 'block' : 'none';
       document.getElementById("silverMaking").style.display = type === 'silver' ? 'block' : 'none';
+      document.getElementById("purityGroup").style.display = type === 'gold' ? 'block' : 'none';
     }
 
     function calculate() {
@@ -188,6 +194,9 @@
         ? parseFloat(document.getElementById("goldMaking").value)
         : parseFloat(document.getElementById("silverMaking").value);
       const discountPercent = parseFloat(document.getElementById("discount").value);
+      const purity = metalType === 'gold'
+        ? parseFloat(document.getElementById("purity").value)
+        : 0.65;
 
       if (!rate10g || !weight) {
         alert("Please fill all fields.");
@@ -195,7 +204,6 @@
       }
 
       const ratePerGram = rate10g / 10;
-      const purity = metalType === 'gold' ? 0.75 : 0.65;
       const adjustedRate = ratePerGram * purity;
       const metalValue = adjustedRate * weight;
       const makingCharges = makingChargePerGram * weight;
@@ -206,7 +214,7 @@
       const finalPrice = subtotal + gst;
 
       document.getElementById("perGramRate").textContent = `₹${ratePerGram.toFixed(2)}`;
-      document.getElementById("metalRate").textContent = `₹${adjustedRate.toFixed(2)} per gram (${metalType === 'gold' ? '18K' : '15.6K'})`;
+      document.getElementById("metalRate").textContent = `₹${adjustedRate.toFixed(2)} per gram (${metalType === 'gold' ? (purity === 0.916 ? '22K (916)' : '18K (750)') : '15.6K (650)'})`;
       document.getElementById("metalValue").textContent = `₹${metalValue.toFixed(2)}`;
       document.getElementById("makingCharges").textContent = `₹${makingCharges.toFixed(2)}`;
       document.getElementById("discountValue").textContent = `-₹${discountValue.toFixed(2)}`;
